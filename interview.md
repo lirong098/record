@@ -1,7 +1,7 @@
 ## webpack如何设置多入口打包及webpack热更新的原理
 ## vue项目如何监测错误
 ## es6有哪些新特性
-## 对象继承的多种方法
+## 对象继承的多种方法（es5的继承方法）
 ## vue有哪些常用的API
 ## vue组件之间传值有哪些方法$on $emit
 ## vue生命钩子有哪些，每个钩子做哪些处理
@@ -10,7 +10,9 @@
 ## css动画的俩种方式
 ## transform用法
 ## undefied和'undefied'的区别、undefied 和 null 的区别
-
+## css哪些属性会继承
+## 异步操作的解决方案promise、Generator、async
+## slice slipt join
 ## git rebase 和 git merge的作用和区别
 ## 微服务及微服务解决方案
 ## js是否能写出AR效果
