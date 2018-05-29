@@ -24,7 +24,7 @@ Requests/sec 每秒请求数量，也就是并发能力
 Latency 延迟情况及其分布
 ~~~
 ### wrk 支持使用 lua 来写脚本，wrk 的代码中 scripts 文件夹中就给出了不少例子，例如 post.lua，可以根据需要来修改
-可以这样来调用 script
+可以这样来调用 script [lua脚本例子](https://github.com/lirong098/record/blob/master/teacherList.lua)
 ```bash
 wrk -t4 -c100 -d30s -T30s --script=post.lua --latency http://www.douban.com
 ```
