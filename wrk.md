@@ -1,7 +1,7 @@
 ## 目前比较流行的HTTP压测工具 wrk
-参考：http://zjumty.iteye.com/blog/2221040
-参考：http://www.restran.net/2016/09/27/wrk-http-benchmark/
-源码：https://github.com/lirong098/wrk （Fork版）
+* 参考：http://zjumty.iteye.com/blog/2221040
+* 参考：http://www.restran.net/2016/09/27/wrk-http-benchmark/
+* 源码：https://github.com/lirong098/wrk （Fork版）
 
 ### mac安装wrk （详细安装步骤请百度）在终端依次输入以下四条命令
 ```bash
