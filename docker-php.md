@@ -11,7 +11,11 @@ docker pull mysql
 docker run --name php-fpm -p 9000:9000 -d php:fpm
 docker cp php-fpm:/usr/local/etc/php-fpm.d/www.conf www.conf
 docker cp php-fpm:/usr/src/php/php.ini-production php.ini
+docker run --name nginx -p 80:80 -d nginx
 docker cp nginx:/etc/nginx/conf.d/default.conf default.conf
+# 复制完文件后再删除容器后面会根据这些配置文件重新启动容器
+docker stop [容器名]
+docker rm [容器名]
 # 将容器的文件复制到物理机
 # docker cp [容器名:][文件路径] [粘贴到本地路径及文件名]
 # 将物理机的文件复制到容器内
@@ -38,16 +42,16 @@ php.tar.xz   php.tar.xz.asc
 ~~~
 解压完毕后, php.ini-production便出现了，我当时的路径是/usr/src/php-7.1.9/php.ini-production。
 #### 修改php.ini文件（复制出来的文件）
-~~~
+~~~bash
 # 查找fix_pathinfo
 ;cgi.fix_pathinfo=1
 # 将;去掉
 cgi.fix_pathinfo=1
-# url解析错误时修改为（参考http://blog.51cto.com/xiumu/1722974）
-cgi.fix_pathinfo=0
+# 当url解析错误时修改为（参考http://blog.51cto.com/xiumu/1722974）
+# cgi.fix_pathinfo=0
 ~~~
 #### 修改default.conf文件（复制出来的文件）
-~~~
+~~~bash
 server {
     listen       80;
     server_name  _;
