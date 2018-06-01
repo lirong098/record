@@ -125,3 +125,122 @@ phpinfo();
 上面的步骤是最简单的入门及理解docker的最好的方法，适合配置自己的开发环境
 ## 参考[再谈docker搭建nginx+php+mysql开发环境](http://www.sail.name/2017/09/26/retalk-use-docker-to-build-development-environment-of-php-mysql-nginx/)
 ## [docker中文文档](https://docker_practice.gitee.io/)
+
+# thinkPhp 部署
+### 修改default.conf (nginx配置文件)
+~~~bash
+server {
+    listen       80;
+    server_name  _;
+    root /usr/share/nginx/html;
+    index index.php index.html index.htm;
+
+    #charset koi8-r;
+    #access_log  /var/log/nginx/log/host.access.log  main;
+
+    location / {
+        #root   /usr/share/nginx/html;
+        #index  index.php index.html index.htm;
+	    try_files $uri $uri/ =404;
+        #访问路径的文件不存在则重写URL转交给ThinkPHP处理  
+        if (!-e $request_filename) {  
+           rewrite  ^/(.*)$  /index.php/$1  last;  
+           break;  
+        } 
+    }
+
+    error_page  404  /404.html;
+    location = /40x.html {
+        root    /user/share/nginx/html;
+    }
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+    #
+    #location ~ \.php$ {
+    #    proxy_pass   http://127.0.0.1;
+    #}
+
+    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+    #
+   # location ~ \.php$ {
+        #root           /var/www/html/public/index.php;
+        #fastcgi_pass   php-fpm:9000;
+       # fastcgi_index  index.php;
+#        fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+      #  include        fastcgi_params;
+     #   fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+
+    #}
+    location ~ \.php/?.*$ {
+        root        /var/www/html/public/;
+        fastcgi_pass   php-fpm:9000;  
+        fastcgi_index  index.php;  
+        #加载Nginx默认"服务器环境变量"配置  
+        include        fastcgi_params;  
+          
+        #设置PATH_INFO并改写SCRIPT_FILENAME,SCRIPT_NAME服务器环境变量  
+        set $fastcgi_script_name2 $fastcgi_script_name;  
+        if ($fastcgi_script_name ~ "^(.+\.php)(/.+)$") {  
+            set $fastcgi_script_name2 $1;  
+            set $path_info $2;  
+        }  
+        fastcgi_param   PATH_INFO $path_info;  
+        fastcgi_param   SCRIPT_FILENAME   $document_root$fastcgi_script_name2;  
+        fastcgi_param   SCRIPT_NAME   $fastcgi_script_name2;  
+    } 
+
+    # deny access to .htaccess files, if Apache's document root
+    # concurs with nginx's one
+    #
+    location ~ /\.ht {
+        deny  all;
+    }
+}
+
+~~~
+### 进入php-fpm容器
+执行下面命令
+~~~bash
+apt-get update
+apt-get install mlocate
+updatedb
+docker-php-ext-install pdo_mysql
+# 如果pdo_mysql安装失败，修改php.ini文件。找到以下插件并启用
+extension=php_mysqli.dll
+extension=php_pdo.dll
+extension=php_pdo_mysql.dll
+extension=pdo.so
+extension=pdo_mysql.so
+~~~
+### 修改php.ini
+在你的php.ini文件将以下的几项配置为UNIX socket的值,没有自行添加
+~~~bash
+pdo_mysql.default_socket
+mysql.default_socket
+mysqli.default_socket
+
+## 示范
+mysqli.default_socket = /var/run/mysqld/mysqld.sock
+~~~
+#### 如何获取UNIX socket
+~~~bash
+docker exec -it mysql bash
+mysql -u root -p 123456
+STATUS;
+~~~
+就会看到UNIX socket，复制
+### 修改tp项目的数据库配置文件的
+DB_HOST 或者 hostname
+~~~bash
+# 我的列子 tp5
+"hostname" => mysql
+注意 mysql是我的mysql容器名称
+~~~
+# mysql:8.0 的登录验证变了 请百度查看 我用的mysql:5.7,随后我会解决mysql:8.0和tp登录问题
