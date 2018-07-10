@@ -17,8 +17,11 @@ console.log(as.prototype)
 }
 ~~~
 #### 思考
-Object.prototype也是属于Object函数的原型对象，那么此原型对象的根据什么构造函数创建的呢？打印Object.prototype.__proto__  就可以看出结果：null
-
+Object.prototype也是属于Object函数的原型对象，那么此原型对象的根据什么构造函数创建的呢？
+~~~javaScript
+// 打印
+console.log(Object.prototype.__proto__) // 就可以看出结果：null
+~~~
 #### 每个实例对象都一个constructor（构造函数）属性指向此对象是由哪个构造函数创建的
 ~~~javaScript
 // 添加构造函数的原型属性
