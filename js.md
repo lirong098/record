@@ -64,6 +64,10 @@ function as () {
 ## 继承
 #### 原型链继承
 ~~~javaScript
+// o 是实例对象 要被继承的对象
+let o = {
+    oName: 'li'
+}
 // 函数方式
 function object (o) {
     function F () {}
@@ -76,10 +80,6 @@ Object.create(o,{
 	    value: 'test'
 	}
 })
-// o 是实例对象 要被继承的对象
-o = {
-    oName: 'li'
-}
 // minO: 继承后的对象
 minO = object(o)
 console.log(minO.oName) // 'li'
@@ -124,3 +124,48 @@ sub.getName() // 'sa'
 sub.getAge() // 23
 ~~~
 ##### 注意：这时改变superType.protoType  sub实例也会改变 (不要在代码执行时有修改superType.protoType的属性的代码，除非必要，能把控)
+
+#### 扩展构造函数
+方法代理可以轻松地通过一个新构造函数来扩展一个已有的构造函数。这个例子使用了construct和apply。
+~~~javaScript
+function extend(sup,base) {
+    // Object.getOwnPropertyDescriptor: 返回指定对象上一个自有属性对应的属性描述符。
+    // {"writable":true,"enumerable":false,"configurable":true}
+    var descriptor = Object.getOwnPropertyDescriptor(
+        base.prototype,"constructor"
+    );
+    base.prototype = Object.create(sup.prototype);
+    // handler.construct() 方法用于拦截new 操作符. 为了使new操作符在生成的Proxy对象上生效，用于初始化代理的目标对象自身必须具有[[Construct]]内部方法（即 new target 必须是有效的）
+    var handler = {
+        construct: function(target, args) {
+            var obj = Object.create(base.prototype);
+            this.apply(target,obj,args);
+            return obj;
+        },
+        apply: function(target, that, args) {
+            sup.apply(that,args);
+            base.apply(that,args);
+        }
+    };
+    // Proxy 对象用于定义基本操作的自定义行为（如属性查找，赋值，枚举，函数调用等）参考：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Proxy
+    var proxy = new Proxy(base,handler);
+    descriptor.value = proxy;
+    Object.defineProperty(base.prototype, "constructor", descriptor);
+    return proxy;
+}
+
+var Person = function(name){
+    this.name = name
+};
+
+var Boy = extend(Person, function(name, age) {
+    this.age = age;
+});
+
+Boy.prototype.sex = "M";
+
+var Peter = new Boy("Peter", 13);
+console.log(Peter.sex);  // "M"
+console.log(Peter.name); // "Peter"
+console.log(Peter.age);  // 13
+~~~
