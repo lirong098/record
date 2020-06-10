@@ -1,4 +1,7 @@
+[toc]
+
 ## 目前比较流行的HTTP压测工具 wrk
+
 * 参考：http://zjumty.iteye.com/blog/2221040
 * 参考：http://www.restran.net/2016/09/27/wrk-http-benchmark/
 * 源码：https://github.com/lirong098/wrk （Fork版）
