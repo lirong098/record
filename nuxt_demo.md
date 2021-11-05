@@ -3,6 +3,7 @@
 > docker环境部署
 > pm2守护nuxt.js进程
 > 自定义api、axios、less、全局less变量、url-loader、全局css，js等配置
+> [demo](https://github.com/lirong098/nuxt-demo)
 
 ## Build Setup
 
