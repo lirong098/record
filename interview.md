@@ -1,5 +1,104 @@
 # 1. JS基础
 ### 1.1 操作Array的方法有哪些
+* Symbol.iterator
+返回数组的 iterator 方法，默认情况与values()返回值一样
+~~~
+var arr = ['a', 'b', 'c', 'd', 'e'];
+var eArr = arr[Symbol.iterator]();
+console.log(eArr.next().value); // a
+console.log(eArr.next().value); // b
+console.log(eArr.next().value); // c
+console.log(eArr.next().value); // d
+console.log(eArr.next().value); // e
+~~~
+[深入理解iterrator](https://juejin.cn/post/6844903591539376136)
+* Symbol.species
+返回Array 的构造函数，如果是自定义的array构造函数实例的array，Symbol.species返回此自定义的构造函数。
+~~~
+let arr = [1, 2]
+arr[Symbol.species] // function Array()
+
+class MyArray extends Array {
+  // 重写 MyArray 的 species 属性到父类 Array 的构造函数
+  static get [Symbol.species]() { return Array; }
+}
+~~~
+* concat
+方法用于合并两个或多个数组。此方法不会更改现有数组，而是返回一个新数组。
+* copyWithin
+方法浅复制数组的一部分到同一数组中的另一个位置，并返回它，不会改变原数组的长度。
+```
+const array1 = ['a', 'b', 'c', 'd', 'e'];
+
+// 把索引3到4的数据，copy到索引0的位置并替换原来的数据 "d" 替换 "a"
+console.log(array1.copyWithin(0, 3, 4));
+// expected output: Array ["d", "b", "c", "d", "e"]
+
+// 把索引3到结束为止的数据，copy到索引1的位置并替换原来的数据 "d", "e" 替换 "d"
+console.log(array1.copyWithin(1, 3));
+// expected output: Array ["d", "d", "e", "d", "e"]
+```
+* entries
+entries() 方法返回一个新的Array Iterator对象，该对象包含数组中每个索引的键/值对。
+```
+// entries 与 symbol.iterator的value的区别
+const array1 = ['a', 'b', 'c'];
+const iterator1 = array1.entries();
+const eArr = array1[Symbol.iterator]();
+console.log(iterator1.next().value);
+// expected output: Array [0, "a"]
+console.log(eArr.next().value); // a
+
+// entries 二维数组排序
+function sortArr(arr) {
+    var goNext = true;
+    var entries = arr.entries();
+    while (goNext) {
+        var result = entries.next();
+        if (result.done !== true) {
+            result.value[1].sort((a, b) => a - b);
+            goNext = true;
+        } else {
+            goNext = false;
+        }
+    }
+    return arr;
+}
+
+var arr = [[1,34],[456,2,3,44,234],[4567,1,4,5,6],[34,78,23,1]];
+sortArr(arr);
+
+/*(4) [Array(2), Array(5), Array(5), Array(4)]
+    0:(2) [1, 34]
+    1:(5) [2, 3, 44, 234, 456]
+    2:(5) [1, 4, 5, 6, 4567]
+    3:(4) [1, 23, 34, 78]
+    length:4
+    __proto__:Array(0)
+*/
+```
+* every
+every() 方法测试一个数组内的所有元素是否都能通过某个指定函数的测试。它返回一个布尔值。
+> **注意：**若收到一个空数组，此方法在一切情况下都会返回 true
+```
+// 下例检测数组中的所有元素是否都大于 10
+function isBigEnough(element, index, array) {
+  return element >= 10;
+}
+[12, 5, 8, 130, 44].every(isBigEnough);   // false
+[12, 54, 18, 130, 44].every(isBigEnough); // true
+```
+* fill
+fill() 方法用一个固定值填充一个数组中从起始索引到终止索引内的全部元素。不包括终止索引。
+> **注意1：**fill的返回值是修改后的原数组，即原数组的值也会变。
+> **注意2：**当对象作为fill的参数是，填充的是对象的引用，即浅拷贝。
+```
+[1, 2, 3].fill(4);               // [4, 4, 4]
+[1, 2, 3].fill(4, 1);            // [1, 4, 4]
+Array(3).fill(4);                // [4, 4, 4]
+// fill 方法接受三个参数 value, start 以及 end. start 和 end 参数是可选的, 其默认值分别为 0 和 this 对象的 length 属性值。
+[].fill.call({ length: 3 }, 4);  // {0: 4, 1: 4, 2: 4, length: 3}
+```
 slice slipt join
 
 ### 1.2 原型链与继承深入理解(包括es6)
