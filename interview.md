@@ -1,3 +1,4 @@
+[TOC]
 - [1. JS基础](#1-js基础)
     - [1.1 操作Array的方法有哪些](#11-操作array的方法有哪些)
     - [1.2 apply、call、bind](#12-applycallbind)
@@ -68,7 +69,6 @@
         - [canvas原理是什么](#canvas原理是什么)
         - [node多进程管理](#node多进程管理)
 # 1. JS基础
-[TOC]
 ### 1.1 操作Array的方法有哪些
 * **Symbol.iterator**
 
