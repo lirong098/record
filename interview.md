@@ -1,4 +1,5 @@
 # 1. JS基础
+[TOC]
 ### 1.1 操作Array的方法有哪些
 * **Symbol.iterator**
 
@@ -487,6 +488,7 @@ arr.unshift([-7, -6], [-5]); // the new array length is 8
 >  Array.prototype.values === Array.prototype[Symbol.iterator]
 
 ```js
+
 const array1 = ['a', 'b', 'c'];
 const iterator = array1.values();
 
