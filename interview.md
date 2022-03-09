@@ -1,5 +1,5 @@
-# 1. JS基础
 [TOC]
+# 1. JS基础
 ### 1.1 操作Array的方法有哪些
 * **Symbol.iterator**
 
