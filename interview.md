@@ -583,6 +583,39 @@ for (const value of iterator) {
 ### 1.2 原型链与继承深入理解(包括es6)
 
 ### 1.3 冒泡排序理解与实现
+- **冒泡排序算法的原理如下：** 
+ - 比较相邻的元素。如果第一个比第二个大，就交换他们两个。 [1] 
+ - 对每一对相邻元素做同样的工作，从开始第一对到结尾的最后一对。在这一点，最后的元素应该会是最大的数。 [1] 
+ - 针对所有的元素重复以上的步骤，除了最后一个。 [1] 
+ - 持续每次对越来越少的元素重复上面的步骤，直到没有任何一对数字需要比较。
+```js
+// 一般的排序没有hasSort的逻辑，增加这个是为了减少无用的循环
+function bubbleSort(arr, isReverse) {
+    var i = arr.length, j;
+    var tempExchangVal;
+    var hasSort = true;
+    while (i > 0 && hasSort) {
+        hasSort = false
+        for (j = 0; j < i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                hasSort = true
+                tempExchangVal = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = tempExchangVal;
+            }
+        }
+        console.log(JSON.stringify(arr))
+        i--;
+    }
+    if (isReverse) return arr.reverse()
+    return arr;
+}
+ 
+var arr = [3, 2, 4, 9, 1, 5, 7, 6, 8];
+var arrSorted = bubbleSort(arr);
+console.log(arrSorted);
+alert(arrSorted);
+```
 
 ### 1.4 网站性能优化有哪些（包括 vue相关优化）
 >灵感来源：[提高 10 倍性能：优化静态网站](https://juejin.im/post/5ac9e430f265da2392369ec0)
