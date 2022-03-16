@@ -582,7 +582,382 @@ for (const value of iterator) {
 
 ### 1.2 原型链与继承深入理解(包括es6)
 
-### 1.3 冒泡排序理解与实现
+[来源MDN【继承与原型链】](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Inheritance_and_the_prototype_chain)
+
+JavaScript 是动态的，本身不提供一个 `class` 的实现。即便是在 ES2015/ES6 中引入了 `class` 关键字，但那也只是语法糖，JavaScript 仍然是基于原型的。
+
+JavaScript 只有一种结构：对象。每个实例对象（object）都有一个私有属性（称之为__ __proto__ __）指向它的构造函数的原型对象（**prototype**）。该原型对象也有一个自己的原型对象（____proto__），层层向上直到一个对象的原型对象为 `null`。根据定义，`null` 没有原型，并作为这个**原型链**中的最后一个环节。
+
+**性能**
+
+在原型链上查找属性比较耗时，对性能有副作用，这在性能要求苛刻的情况下很重要。另外，试图访问不存在的属性时会遍历整个原型链。
+
+遍历对象的属性时，原型链上的**每个**可枚举属性都会被枚举出来。要检查对象是否具有自己定义的属性，而不是其原型链上的某个属性，则必须使用所有对象从 `Object.prototype` 继承的 `hasOwnProperty (en-US)` 方法。
+
+`hasOwnProperty (en-US)` 是 JavaScript 中唯一一个处理属性并且**不会**遍历原型链的方法。（译者注：原文如此。另一种这样的方法：`Object.keys()`）
+
+注意：检查属性是否为 `undefined` 是**不能够**检查其是否存在的。该属性可能已存在，但其值恰好被设置成了 `undefined`。
+
+**错误实践：扩展原生对象的原型**
+
+经常使用的一个错误实践是扩展 `Object.prototype` 或其他内置原型。
+
+这种技术被称为猴子补丁并且会破坏封装。尽管一些流行的框架（如 Prototype.js）在使用该技术，但仍然没有足够好的理由使用附加的非标准方法来混入内置原型。
+
+扩展内置原型的**唯一**理由是支持 JavaScript 引擎的新特性，如 `Array.forEach`。
+
+**[总结：4 个用于拓展原型链的方法](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Inheritance_and_the_prototype_chain#总结：4_个用于拓展原型链的方法)**
+
+* New-initialization（初始化）
+
+  ```js
+   // 定义一个基类 base，定义一个类是继承基类的 custom
+  function base () {}
+  base.prototype = {
+    isBase: true,
+    sum (a, b) {
+      return a + b
+    }
+  }
+  
+  function custom () {}
+  
+  const proto = new base()
+  
+  proto.isCustom = true
+  
+  custom.prototype = proto
+  
+  const customData = new custom()
+  
+  console.log(customData)
+  console.log(customData.isCustom) // true
+  console.log(customData.isBase) // true
+  // console.log(customData)控制台打印结果如下
+  // 解析：customData是custom构造函数的实例，实例的私有属性（[[Prototype]]）指向base构造函数的实例，base构造函数实例的私有属性（[[Prototype]]）。通过，原型链访问就能得到基类定义的属性。
+  	[[Prototype]]: Object // customData实例的私有属性指向 custom构造函数的原型对象（prototype）
+  		isCustom: true
+  		[[Prototype]]: Object // custom构造函数的原型对象（prototype）是base构造函数的shilie
+  			isBase: true
+  			sum: ƒ sum(a, b)
+  			[[Prototype]]: Object
+  				constructor: ƒ Object()
+  				hasOwnProperty: ƒ hasOwnProperty()
+  				isPrototypeOf: ƒ isPrototypeOf()
+  				propertyIsEnumerable: ƒ propertyIsEnumerable()
+  				toLocaleString: ƒ toLocaleString()
+  				toString: ƒ toString()
+  				valueOf: ƒ valueOf()
+  				__defineGetter__: ƒ __defineGetter__()
+  				__defineSetter__: ƒ __defineSetter__()
+      		__lookupGetter__: ƒ __lookupGetter__()
+  				__lookupSetter__: ƒ __lookupSetter__()
+  				__proto__: (...)
+  				get __proto__: ƒ __proto__()
+  				set __proto__: ƒ __proto__()
+  
+  
+  ```
+
+  **优势：**支持目前以及所有可想象到的浏览器(IE5.5都可以使用)。 这种方法非常快，非常符合标准，并且充分利用JIT优化。
+
+   缺点：为使用此方法，必须对相关函数初始化。 在初始化过程中，构造函数可以存储每个对象必须生成的唯一信息。但是，这种唯一信息只生成一次，可能会带来潜在的问题。此外，构造函数的初始化，可能会将不需要的方法放在对象上。然而，如果你只在自己的代码中使用，你也清楚（或有通过注释等写明）各段代码在做什么，这些在大体上都不是问题（事实上，通常是有益处的）。`通俗说法，多个继承基类的子类共享同一个引用类型，改变基类实例，所有子类都会更改。`
+
+* Object.create
+
+  ```js
+   function foo(){}
+   foo.prototype = {
+     foo_prop: "foo val"
+   };
+   function bar(){}
+   var proto = Object.create(
+     foo.prototype
+   );
+   proto.bar_prop = "bar val";
+   bar.prototype = proto;
+   var inst = new bar;
+   console.log(inst.foo_prop);
+   console.log(inst.bar_prop);
+   
+  Copy to Clipboard
+   function foo(){}
+   foo.prototype = {
+     foo_prop: "foo val"
+   };
+   function bar(){}
+   var proto = Object.create(
+     foo.prototype,
+     {
+       bar_prop: {
+         value: "bar val"
+       }
+     }
+   );
+   bar.prototype = proto;
+   var inst = new bar;
+   console.log(inst.foo_prop);
+   console.log(inst.bar_prop)
+  ```
+  **优势：**支持当前所有非微软版本或者 IE9 以上版本的浏览器。允许一次性地直接设置 `__proto__` 属性，以便浏览器能更好地优化对象。同时允许通过 `Object.create(null) `来创建一个没有原型的对象。
+  
+  
+  
+  **缺点：**不支持 IE8 以下的版本。然而，随着微软不再对系统中运行的旧版本浏览器提供支持，这将不是在大多数应用中的主要问题。 另外，这个慢对象初始化在使用第二个参数的时候有可能成为一个性能黑洞，因为每个对象的描述符属性都有自己的描述对象。当以对象的格式处理成百上千的对象描述的时候，可能会造成严重的性能问题。
+  
+* Object.setPrototypeOf
+
+  ```js
+   function foo(){}
+   foo.prototype = {
+     foo_prop: "foo val"
+   };
+   function bar(){}
+   var proto = {
+     bar_prop: "bar val"
+   };
+   Object.setPrototypeOf(
+     proto, foo.prototype
+   );
+   bar.prototype = proto;
+   var inst = new bar;
+   console.log(inst.foo_prop);
+   console.log(inst.bar_prop);
+   
+  Copy to Clipboard
+   function foo(){}
+   foo.prototype = {
+     foo_prop: "foo val"
+   };
+   function bar(){}
+   var proto;
+   proto=Object.setPrototypeOf(
+     { bar_prop: "bar val" },
+     foo.prototype
+   );
+   bar.prototype = proto;
+   var inst = new bar;
+   console.log(inst.foo_prop);
+   console.log(inst.bar_prop)
+  ```
+  
+  **优势：**支持所有现代浏览器和微软IE9+浏览器。允许动态操作对象的原型，甚至能强制给通过 `Object.create(null) `创建出来的没有原型的对象添加一个原型。
+  
+  
+  
+  **缺点：**这个方式表现并不好，应该被弃用。如果你在生产环境中使用这个方法，那么快速运行 Javascript 就是不可能的，因为许多浏览器优化了原型，尝试在调用实例之前猜测方法在内存中的位置，但是动态设置原型干扰了所有的优化，甚至可能使浏览器为了运行成功，使用完全未经优化的代码进行重编译。 不支持 IE8 及以下的浏览器版本。
+  
+* 第4个暂不维护请看原文
+
+**最佳继承方案**
+
+以上MDN文档上提到的4种继承方案都有缺点，那实际工作中怎么用呢？
+
+* ## 实例属性
+
+`实例属性`是什么？看下面代码来理解：
+
+```js
+// 这里的 name 和 obj就是实例属性，每次new 创建新的实例对象，实例对象的非原型（prototype）属性也是新创建，不是指针的引用，各个实例之间改变此属性，不会相互影响，称为实例属性。
+
+function base () {
+	this.name = '实例属性' // 实例属性
+  this.obj = {					// 实例属性
+    a: 1,
+    b: 2
+  }
+}
+base.prototype.quoteAttr = '原型属性' // prototype上的称为原型属性，各个实例之间公用一个prototype
+const data = new base()
+console.log(data)
+// 打印结果
+- base {name: '实例属性', obj: {…}}
+	- name: "实例属性"
+	- obj: {a: 1, b: 2}
+	- [[Prototype]]: Object
+
+// 实例属性第二种写法
+function base () {}
+base.name = '实例属性'
+base.obj = {
+   a: 1,
+   b: 2
+ }
+
+```
+
+创建基类的实例属性，可保障各个子类的实例属性之间不相互影响，了解了这一点，继承就可以定义对应的需求。
+
+* ### 改变函数的constructor
+
+  了解[Object.prototypeconstructor](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/constructor)
+
+  思考：如果子类有一些特有的属性，如何在New-initialization方法中体现?
+
+  ```js
+  ...
+  function custom () {}
+  const proto = new base()
+  proto.isCustom = true
+  custom.prototype = proto
+  ....
+  // 为什么不这样写？
+  ...
+  function custom () {
+  	this.isCustom = true
+  }
+  const proto = new base()
+  custom.prototype = proto
+  const customData = new custom()
+  ...
+  // 控制台调试customData发现没有isCustom属性，为什么？那就了解一下改变函数的constructor把。
+  
+  ```
+
+  [来源 MDN](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/constructor#%E6%94%B9%E5%8F%98%E5%87%BD%E6%95%B0%E7%9A%84_constructor)
+
+  大多数情况下，此属性用于定义一个构造函数，并使用**new**和继承原型链进一步调用它。
+
+  ```js
+  function Parent() {}
+  Parent.prototype.parentMethod = function parentMethod() {};
+  
+  function Child() {}
+  Child.prototype = Object.create(Parent.prototype); // re-define child prototype to Parent prototype
+  
+  Child.prototype.constructor = Child; // return original constructor to Child
+  ```
+
+  但为什么我们需要在这里执行最后一行？很不幸正确答案是 - 看情况而定。
+
+  让我们来尝试定义在哪些情况下，重新分配原始构造函数会发挥重要作用，以及在什么时候它就是额外的未使用的（无效的）代码行。
+
+  试想下一种情况：该对象具有创建自身的**create**方法。
+
+  ```js
+  function Parent() {};
+  function CreatedConstructor() {}
+  
+  CreatedConstructor.prototype = Object.create(Parent.prototype);
+  
+  CreatedConstructor.prototype.create = function create() {
+    return new this.constructor();
+  }
+  
+  new CreatedConstructor().create().create(); // error undefined is not a function since constructor === Parent
+  ```
+
+  在上面的示例中，将显示异常，因为构造函数链接到Parent。
+
+  为了避免它，只需分配您将要使用的必要构造函数。
+
+  ```js
+  function Parent() {};
+  function CreatedConstructor() {}
+  
+  CreatedConstructor.prototype = Object.create(Parent.prototype);
+  CreatedConstructor.prototype.constructor = CreatedConstructor; // set right constructor for further using
+  
+  CreatedConstructor.prototype.create = function create() {
+    return new this.constructor();
+  }
+  
+  new CreatedConstructor().create().create(); // it's pretty fine
+  ```
+
+  好的，现在很清楚为什么更改构造函数会很有用。
+
+  让我们再考虑一个案例。
+
+  ```js
+  function ParentWithStatic() {}
+  
+  ParentWithStatic.startPosition = { x: 0, y:0 };
+  ParentWithStatic.getStartPosition = function getStartPosition() {
+    return this.startPosition;
+  }
+  
+  function Child(x, y) {
+    this.position = {
+      x: x,
+      y: y
+    };
+  }
+  
+  Child.prototype = Object.create(ParentWithStatic.prototype);
+  Child.prototype.constructor = Child;
+  
+  Child.prototype.getOffsetByInitialPosition = function getOffsetByInitialPosition() {
+    var position = this.position;
+    var startPosition = this.constructor.getStartPosition(); // error undefined is not a function, since the constructor is Child
+  
+    return {
+      offsetX: startPosition.x - position.x,
+      offsetY: startPosition.y - position.y
+    }
+  };
+  ```
+
+  对于此示例，我们需要保持父构造函数继续正常工作。
+
+  **总结**：手动设置或更新构造函数可能会导致不同且有时令人困惑的后果。为了防止它，只需在每个特定情况下定义构造函数的角色。在大多数情况下，不使用构造函数，并且不需要重新分配构造函数。
+
+  * ## 实例属性与函数的construtor了解了之后看来**有效继承**
+
+  ```js
+  function base () {
+  	this.name = '实例属性'
+  	this.data = {
+  		x: 1
+    }
+  }
+  base.prototype.isBase = true
+  base.prototype.sum = function (a, b) {
+     return a + b
+  }
+  
+  function custom () {
+  	this.isCustom = true
+    this.data = { // 如果有相同的属性，读取的是子类的data，因为，按链式查找，——>
+  		x: 2        // 基类的data，在最终实例的prototype中。
+    }
+  }
+  
+  const proto = new base()
+  
+  custom.prototype = proto
+  
+  custom.prototype.construtor = custom
+  
+  const customData = new custom()
+  console.log(customData)
+  
+  // 封装
+  // subType: 子类型构造函数；
+  // superType: 超类型构造函数;
+  function extends (subType, superType) {
+    const proto = new superType()
+    subType.prototype = proto
+    subType.prototype.construtor = subType
+    return new subType()
+    
+    ----------------object.create------------------------
+    // 不能继承基类的实例属性，要将需要继承的方法都放在prototype上，这也是大部分继承用的。
+    // 想继承基类的实例属性，可再加相关代码 如superType.call(new subType) 等等。注意覆盖属性的顺序
+  	subType.prototype = Object.create(superType.prototype)
+    subType.prototype.construtor = subType
+    return new subType()
+  }
+  
+  extends(custom, base) === customData
+  
+  
+  ```
+
+  
+
+1.3 冒泡排序理解与实现
+
 - **冒泡排序算法的原理如下：** 
    - 比较相邻的元素。如果第一个比第二个大，就交换他们两个。 [1] 
    - 对每一对相邻元素做同样的工作，从开始第一对到结尾的最后一对。在这一点，最后的元素应该会是最大的数。 [1] 
