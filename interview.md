@@ -951,12 +951,10 @@ base.obj = {
   
   extends(custom, base) === customData
   
-  
   ```
 
-  
 
-1.3 冒泡排序理解与实现
+### 1.3 冒泡排序理解与实现
 
 - **冒泡排序算法的原理如下：** 
    - 比较相邻的元素。如果第一个比第二个大，就交换他们两个。 [1] 
@@ -1012,11 +1010,27 @@ alert(arrSorted);
 
 ### 1.5 promise
 
+一个 `Promise` 对象代表一个在这个 promise 被创建出来时不一定已知的值。它让您能够把异步操作最终的成功返回值或者失败原因和相应的处理程序关联起来。 这样使得异步方法可以像同步方法那样返回值：异步方法并不会立即返回最终的值，而是会返回一个 *promise*，以便在未来某个时候把值交给使用者。
+
 #### 1.5.1 promise的原理实现
 
 #### 1.5.2 promise的状态与执行过程
 
+一个 `Promise` 必然处于以下几种状态之一：
+
+- *待定（pending）*: 初始状态，既没有被兑现，也没有被拒绝。
+- *已兑现（fulfilled）*: 意味着操作成功完成。
+- *已拒绝（rejected）*: 意味着操作失败。
+
 #### 1.5.3 new promise(没有 参数) 会怎么样
+
+```js
+new Promise()
+```
+
+Uncaught TypeError: Promise resolver undefined is not a function
+    at new Promise (<anonymous>)
+    at <anonymous>:1:1
 
 ### 1.6 var变量提升与函数提升（经常考的面试题）
 
@@ -1025,7 +1039,11 @@ alert(arrSorted);
 
 ### 1.8 说说对冒泡、捕获的理解
 
+**DOM2级事件”规定事件流包括三个阶段，事件捕获阶段、处于目标阶段和事件冒泡阶段。首先发生的事件捕获，为截获事件提供了机会。然后是实际的目标接收了事件。最后一个阶段是冒泡阶段，可以在这个阶段对事件做出响应。**
+
 ### 1.9 阻止冒泡的方法
+
+event.stopPropagation
 
 ### 1.10 如何用原生注册一个自定义事件
 
@@ -1059,6 +1077,10 @@ alert(arrSorted);
 ### 1.21 判断数组的方法
 * Object.protoType.call(array)
 * Array.isArray(array)
+
+1.22 实现一个JSON.stringify()
+
+入参Object|Array|String|Number
 
 
 # 2. CSS
@@ -1103,6 +1125,8 @@ alert(arrSorted);
 
 # 4. 工程化(了解webpack基本)
 ### 4.1 webpack如何设置多入口打包及webpack热更新的原理
+
+4.2 webpack如何兼容多种代码格式如 amd、cmd、commonjs
 
 ### 4.2 mvvm、mvc是什么
 
