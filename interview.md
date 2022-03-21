@@ -957,9 +957,9 @@ base.obj = {
 ### 1.3 冒泡排序理解与实现
 
 - **冒泡排序算法的原理如下：** 
-   - 比较相邻的元素。如果第一个比第二个大，就交换他们两个。 [1] 
-   - 对每一对相邻元素做同样的工作，从开始第一对到结尾的最后一对。在这一点，最后的元素应该会是最大的数。 [1] 
-   - 针对所有的元素重复以上的步骤，除了最后一个。 [1] 
+   - 比较相邻的元素。如果第一个比第二个大，就交换他们两个。
+   - 对每一对相邻元素做同样的工作，从开始第一对到结尾的最后一对。在这一点，最后的元素应该会是最大的数。
+   - 针对所有的元素重复以上的步骤，除了最后一个。
    - 持续每次对越来越少的元素重复上面的步骤，直到没有任何一对数字需要比较。
 ```js
 // 一般的排序没有hasSort的逻辑，增加这个是为了减少无用的循环
@@ -1007,6 +1007,7 @@ alert(arrSorted);
 > 待补充
 
 >* 懒加载、预加载、按需加载（需补充具体的方案）
+>* web服务部署在CDN，并合理配置缓存
 
 ### 1.5 promise
 
@@ -1032,7 +1033,7 @@ Uncaught TypeError: Promise resolver undefined is not a function
     at new Promise (<anonymous>)
     at <anonymous>:1:1
 
-### 1.6 var变量提升与函数提升（经常考的面试题）
+### 1.6 var变量提升与函数提升（经常考的面试题）、class，如何编写不提升
 
 ### 1.7 说说对任务队列与事件循环的理解
 >同步和异步任务分别进入不同的执行环境，同步的进入主线程，即主执行栈，异步的进入任务队列（先进先出）。主线程内的任务执行完毕为空，会去任务队列读取对应的任务，推入主线程执行。 上述过程的不断重复就是我们说的 Event Loop (事件循环)。
@@ -1078,10 +1079,71 @@ event.stopPropagation
 * Object.protoType.call(array)
 * Array.isArray(array)
 
-1.22 实现一个JSON.stringify()
+### 1.22 重写JSON.stringify()
 
-入参Object|Array|String|Number
+[原文MDN《JSON》](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/JSON)
 
+```js
+if (!window.JSON) {
+  window.JSON = {
+    parse: function(sJSON) { return eval('(' + sJSON + ')'); },
+    stringify: (function () {
+      var toString = Object.prototype.toString;
+      var isArray = Array.isArray || function (a) { return toString.call(a) === '[object Array]'; };
+      var escMap = {'"': '\\"', '\\': '\\\\', '\b': '\\b', '\f': '\\f', '\n': '\\n', '\r': '\\r', '\t': '\\t'};
+      var escFunc = function (m) { return escMap[m] || '\\u' + (m.charCodeAt(0) + 0x10000).toString(16).substr(1); };
+      var escRE = /[\\"\u0000-\u001F\u2028\u2029]/g;
+      return function stringify(value) {
+        if (value == null) {
+          return 'null';
+        } else if (typeof value === 'number') {
+          return isFinite(value) ? value.toString() : 'null';
+        } else if (typeof value === 'boolean') {
+          return value.toString();
+        } else if (typeof value === 'object') {
+          if (typeof value.toJSON === 'function') {
+            return stringify(value.toJSON());
+          } else if (isArray(value)) {
+            var res = '[';
+            for (var i = 0; i < value.length; i++)
+              res += (i ? ', ' : '') + stringify(value[i]);
+            return res + ']';
+          } else if (toString.call(value) === '[object Object]') {
+            var tmp = [];
+            for (var k in value) {
+              if (value.hasOwnProperty(k))
+                tmp.push(stringify(k) + ': ' + stringify(value[k]));
+            }
+            return '{' + tmp.join(', ') + '}';
+          }
+        }
+        return '"' + value.toString().replace(escRE, escFunc) + '"';
+      };
+    })()
+  };
+}
+```
+
+
+
+### 1.23 哪些函数触发宏任务，哪些函数触发微任务
+
+**宏任务**
+
+| #    |   browser   |   node   |
+| ---- | ---- | ---- |
+| I/O    |   y   |    y  |
+| setTimeout   |   y   |   y   |
+|   setInterval   |  y    |   y   |
+| setImmediate | n | y |
+| requestAnimationFrame | y | n |
+
+**微任务**
+| #    |   browser   |   node   |
+| ---- | ---- | ---- |
+| process.nextTick    |   n    |    y  |
+| MutationObserver   |   y   |   n   |
+|   Promise.then catch finally   |  y    |   y   |
 
 # 2. CSS
 ### 2.1 px、em、rem、vh、vw分别是什么
