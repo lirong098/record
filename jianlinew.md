@@ -148,7 +148,7 @@
 
 * [vue ssr nuxt简单demo实现](https://github.com/lirong098/record/blob/master/nuxt_demo.md)
 
-* [如何获得别人的信任](https://github.com/lirong098/record/blob/master/text.md)
+* [如何获得别人的信任](https://github.com/lirong098/record/blob/master/word.md)
 
   
 
